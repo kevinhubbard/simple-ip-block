@@ -1,0 +1,26 @@
+{
+  "name": "simple-ip-block",
+  "version": "1.0.0",
+  "description": "Express middleware that blocks ip addresses",
+  "keywords": [
+    "express",
+    "middleware",
+    "ban",
+    "ip"
+  ],
+  "homepage": "https://github.com/kevinhubbard/simple-ip-block#readme",
+  "bugs": {
+    "url": "https://github.com/kevinhubbard/simple-ip-block/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevinhubbard/simple-ip-block.git"
+  },
+  "license": "MIT",
+  "author": "Kevin H",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
