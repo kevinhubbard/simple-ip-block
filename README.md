@@ -12,7 +12,10 @@ A lightweight Node.js package to block and manage IP addresses easily.
 
 ```bash
 npm install simple-ip-block
-
+```
 ## Usage
+
+```javascript
 const banCheck = require('simple-ip-block');
 app.use(banCheck({source: './bannedIP.txt'}));
+```
