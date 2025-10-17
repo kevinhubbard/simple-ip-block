@@ -1,6 +1,6 @@
 {
   "name": "simple-ip-block",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Express middleware that blocks ip addresses",
   "keywords": [
     "express",
