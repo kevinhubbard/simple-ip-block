@@ -1,6 +1,8 @@
 const fs = require('fs');
 let ipArray = [];
 let ipObjectArray = [];
+let ipv4ObjectArray = [];
+let ipv6ObjectArray = [];
 
 function IPStartEndBlock(start, end) {
         this.start = start;
@@ -30,18 +32,132 @@ function ipToIntegerConversion(ipv4Number) {
         return ipInteger;
 }
 
+function v6ToInteger(i6n) {
+        //console.log(i6n);
+        let i6T = BigInt("0x"+i6n[0]) * (2n**16n)**7n + BigInt("0x"+i6n[1]) * (2n**16n)**6n + BigInt("0x"+i6n[2]) * (2n**16n)**5n + BigInt("0x"+i6n[3]) * (2n**16n)**4n + BigInt("0x"+i6n[4]) * (2n**16n)**3n + BigInt("0x"+i6n[5]) * (2n**16n)**2n + BigInt("0x"+i6n[6]) * (2n**16n)**1n + BigInt("0x"+i6n[7]);
+        //console.log("first: " + i6T);
+        return i6T;
+
+}
+
 
 function createIPObject(ipArrayList) {
         for (let i = 0; i < ipArrayList.length; i++) {
+                // if ip address has a cidr # then calculate the start and end block of ip address
                 if (ipArrayList[i].includes('/')) {
-                        let startEndValues = findIPBlock(ipArrayList[i]);
-                        ipObjectArray.push(new IPStartEndBlock(ipToIntegerConversion(startEndValues[0]), ipToIntegerConversion(startEndValues[1])));
+                        if (ipArrayList[i].includes(':')) {
+                                let i6StartEnd = findIPv6Block(ipArrayList[i]);
+                                ipv6ObjectArray.push(new IPStartEndBlock(v6ToInteger(i6StartEnd[0]), v6ToInteger(i6StartEnd[1])));
+                        } else {
+                                let startEndValues = findIPBlock(ipArrayList[i]);
+                                ipv4ObjectArray.push(new IPStartEndBlock(ipToIntegerConversion(startEndValues[0]), ipToIntegerConversion(startEndValues[1])));    
+                        }
+
                 } else {
-                        ipObjectArray.push(new IPStartEndBlock(ipToIntegerConversion(ipArrayList[i]), ipToIntegerConversion(ipArrayList[i])));
+                        // if ip address does not contain cidr value push the same ip start/end value to ip array object
+                        if (ipArrayList[i].includes(':')) {
+                                let i6StartEnd = findIPv6Block(ipArrayList[i] + '/128')
+                                ipv6ObjectArray.push(new IPStartEndBlock(v6ToInteger(i6StartEnd[0]), v6ToInteger(i6StartEnd[1])));
+                        } else {
+                                ipv4ObjectArray.push(new IPStartEndBlock(ipToIntegerConversion(ipArrayList[i]), ipToIntegerConversion(ipArrayList[i])));
+                        }
                 }
         }
+
         return ipObjectArray;
 }
+
+
+function findIPv6Block(i6Num) {
+        let i6Range = [];
+        let i6Begins = '';
+        let i6Ends = '';
+        let cidr = parseInt(getCidrBlock(i6Num));
+
+        let expaI6 = expandIPv6(i6Num);
+        //console.log(expaI6);
+
+        let i6HexToBin = '';
+        for (let i = 0; i < expaI6.length; i++) {
+                let padding = '';
+                let test = parseInt(expaI6[i],16).toString(2);
+                //console.log(test);
+                if (test.length < 16) {
+                        let pad = 16 - test.length;
+                        for (let i = 0; i < pad; i++) {
+                                padding += '0';
+                        }
+                }
+                i6HexToBin += padding + test;
+                //console.log(i6HexToBin);
+        }
+        
+        let beginBits = '';
+
+        for (let i = 0; i < cidr; i++) {
+                beginBits += i6HexToBin.charAt(i);
+        }
+
+        i6Begins = beginBits;
+        i6Ends = beginBits;
+
+        while (i6Begins.length != 128) {
+                i6Begins += '0';
+                //console.log("ib: " + i6Begins)
+        }
+
+        while (i6Ends.length != 128) {
+                i6Ends += '1';
+                //console.log("ie: "+i6Ends);
+        }
+
+        //console.log('i6Begins: ' + i6Begins);
+        //console.log('i6Ends: ' + i6Ends);
+
+        let rebuiltIPV6Begins = [];
+        let rebuiltIPV6Ends = [];
+
+        for (let i = 0; i < i6Begins.length; i+=16) {
+                let sect = i6Begins.slice(i,i+16);
+                //console.log("parsedSection: "+ parseInt(sect, 16));
+                sect = parseInt(sect, 2).toString(16);
+                let padSect = '';
+                let p;
+                if (sect.length < 4) {
+                        p = 4 - sect.length;
+                }
+                for (let i = 0; i < p; i++) {
+                        padSect += '0';
+                }
+                let finalLower = padSect + sect;
+                rebuiltIPV6Begins.push(finalLower);
+                
+        }
+
+        for (let i = 0; i < i6Ends.length; i+=16) {
+                let sect = i6Ends.slice(i,i+16);
+                sect = parseInt(sect, 2).toString(16);
+                let padSect = '';
+                let p;
+                if (sect.length < 4) {
+                        p = 4 - sect.length;
+                }
+                for (let i = 0; i < p; i++) {
+                        padSect += '0';
+                }
+                let finalUpper = padSect + sect;
+                rebuiltIPV6Ends.push(finalUpper);
+                
+        }
+        i6Range.push(rebuiltIPV6Begins);
+        i6Range.push(rebuiltIPV6Ends);
+        return i6Range;
+        //console.log(rebuiltIPV6Begins);
+        //console.log(rebuiltIPV6Ends);
+
+
+}
+
 
 // findIPBlock takes a ipv4 with cidr and returns an array of 2 ip addresses (a start address and an end address)
 function findIPBlock(cidrBlock) {
@@ -137,29 +253,105 @@ function sortArray(array) {
 }
 
 
+function expandIPv6(ipv6String) {
+        let expandedIPv6 = [];
+        let expandedIPv6String = '';
+        let tempString = ipv6String.split('/');
+        const v6Cidr = tempString[1];
+
+        if (tempString[0].includes('::')) {
+                let tempSplit = tempString[0].split('::');
+                //console.log("tempory split: " + tempSplit);
+                
+
+                let leftBlocks = tempSplit[0].split(':');
+                //console.log("left blocks: " + leftBlocks);
+                let rightBlocks = tempSplit[1].split(':');
+                //console.log("right blocks: " + rightBlocks);
+
+                let leftSize = leftBlocks.length;
+                //console.log("left Size: " + leftSize);
+                let rightSize = rightBlocks.length;
+                //console.log("right Size: " + rightSize);
+                let missingBlockSize = 8 - (leftSize + rightSize);
+
+                for (let i = 0; i < leftSize; i++) {
+                        expandedIPv6.push(leftBlocks[i]);
+                }
+
+                for (let i = 0; i < missingBlockSize; i++) {
+                        expandedIPv6.push('0000');
+                }
+
+                for (let i = 0; i < rightSize; i++) {
+                        expandedIPv6.push(rightBlocks[i]);
+                }
+                
+        } else {
+                expandedIPv6 = tempString[0].split(':');
+        }
+
+        for (let i = 0; i < expandedIPv6.length; i++) {
+                expandedIPv6[i] = padHextet(expandedIPv6[i]);
+                expandedIPv6String += expandedIPv6[i];
+        }
+
+
+        return expandedIPv6;
+}
+
+
+
+
+function padHextet(hextet) {
+        let paddedHextet = hextet;
+        if (paddedHextet.length === 4) {
+                return paddedHextet;
+        } else {
+                let missingBits = 4 - paddedHextet.length;
+                for (let i = 0; i < missingBits; i++) {
+                        paddedHextet = '0' + paddedHextet;
+                }
+                return paddedHextet;
+        }
+}
+
+function getCidrBlock(ip) {
+        let cidr = '';
+        if (ip.includes('/')) {
+                cidr = ip.split('/')[1];
+        }
+        return cidr;
+}
+
+
 function banCheckMiddleware(options) {
-        const ipa = createIPObject(loadIPList(options.source));
-        console.log(ipa);
+       createIPObject(loadIPList(options.source));
+/*        console.log(ipa);
         sortArray(ipa);
-        console.log(ipa);
+        console.log(ipa);*/
+
+       console.log(ipv4ObjectArray);
+       console.log(ipv6ObjectArray);
 
 
         return function(req, res, next) {
                 const ip = req.headers['cf-connecting-ip'] || req.ip;
-                let convertedIP = ipToIntegerConversion(ip);
-
-                // if converted ip is in sorted array 
-                        //then return res.status(403).send('Access denied');
-                // else next();
-
-                // Optional: binary search or linear check for now
-        const isBanned = ipObjectArray.some(block =>
-            convertedIP >= block.start && convertedIP <= block.end
-        );
-
-        if (isBanned) {
-                return res.status(403).send('ACCESS-DENIED');
-        }
+                if (ip.includes(':')) {
+                        //IPv6
+                        const convertedIP = v6ToInteger(expandIPv6(ip));
+                        const isv6Banned = ipv6ObjectArray.some(block => {
+                                convertedIP >= block.start && convertedIP <= block.end
+                        });
+                        if (isv6Banned) return res.status(403).send('ACCESS-DENIED');
+                } else {
+                        //IPv4
+                        const convertedIP = ipToIntegerConversion(ip);
+                        const isv4Banned = ipv4ObjectArray.some(block => {
+                                convertedIP >= block.start && convertedIP <= block.end
+                        });
+                        if (isv4Banned) return res.status(403).send('ACCESS-DENIED');
+                }
         next();
         }
 }
