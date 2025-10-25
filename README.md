@@ -1,21 +1,18 @@
 # simple-ip-block
-
-A lightweight Node.js package to block and manage IP addresses easily.
+A lightweight Node.js package to block and manage single IP addresses or entire CIDR blocks easily.
 
 ## Features
-
 - Add or remove IPs dynamically via text file
 - Checks if an IP is banned
 - Sends the banned IP a 403 response [^1][^2] 
 - Simple and easy to integrate with Express or other Node.js apps
 
 ## Installation
-
 ```bash
 npm install simple-ip-block
 ```
-## Usage
 
+## Usage
 ```javascript
 const banCheck = require('simple-ip-block');
 app.use(banCheck({source: './bannedList.txt'}));
@@ -25,7 +22,6 @@ app.use(banCheck({source: './bannedList.txt'}));
 > [!NOTE]
 > Text file should contain only 1 IP address per line using one of the following formats.
 - IPv4 addresses, IPv4 CIDR ranges, IPv6 addresses, IPv6 CIDR ranges
-
 ```
 192.168.1.1
 192.168.1.1/24
