@@ -1,6 +1,5 @@
 const fs = require('fs');
 let ipArray = [];
-let ipObjectArray = [];
 let ipv4ObjectArray = [];
 let ipv6ObjectArray = [];
 
@@ -33,11 +32,7 @@ function ipToIntegerConversion(ipv4Number) {
 }
 
 function v6ToInteger(i6n) {
-        //console.log(i6n);
-        let i6T = BigInt("0x"+i6n[0]) * (2n**16n)**7n + BigInt("0x"+i6n[1]) * (2n**16n)**6n + BigInt("0x"+i6n[2]) * (2n**16n)**5n + BigInt("0x"+i6n[3]) * (2n**16n)**4n + BigInt("0x"+i6n[4]) * (2n**16n)**3n + BigInt("0x"+i6n[5]) * (2n**16n)**2n + BigInt("0x"+i6n[6]) * (2n**16n)**1n + BigInt("0x"+i6n[7]);
-        //console.log("first: " + i6T);
-        return i6T;
-
+        return BigInt("0x"+i6n[0]) * (2n**16n)**7n + BigInt("0x"+i6n[1]) * (2n**16n)**6n + BigInt("0x"+i6n[2]) * (2n**16n)**5n + BigInt("0x"+i6n[3]) * (2n**16n)**4n + BigInt("0x"+i6n[4]) * (2n**16n)**3n + BigInt("0x"+i6n[5]) * (2n**16n)**2n + BigInt("0x"+i6n[6]) * (2n**16n)**1n + BigInt("0x"+i6n[7]);
 }
 
 
@@ -63,25 +58,18 @@ function createIPObject(ipArrayList) {
                         }
                 }
         }
-
-        return ipObjectArray;
 }
 
 
 function findIPv6Block(i6Num) {
-        let i6Range = [];
-        let i6Begins = '';
-        let i6Ends = '';
-        let cidr = parseInt(getCidrBlock(i6Num));
-
+        let i6Range =[], rebuiltIPV6Begins =[], rebuiltIPV6Ends = [];
+        let beginBits = '', i6Begins = '', i6Ends = '', i6HexToBin = '';
+        let cidrNum = parseInt(getCidrBlock(i6Num));
         let expaI6 = expandIPv6(i6Num);
-        //console.log(expaI6);
 
-        let i6HexToBin = '';
         for (let i = 0; i < expaI6.length; i++) {
                 let padding = '';
                 let test = parseInt(expaI6[i],16).toString(2);
-                //console.log(test);
                 if (test.length < 16) {
                         let pad = 16 - test.length;
                         for (let i = 0; i < pad; i++) {
@@ -89,12 +77,9 @@ function findIPv6Block(i6Num) {
                         }
                 }
                 i6HexToBin += padding + test;
-                //console.log(i6HexToBin);
         }
-        
-        let beginBits = '';
 
-        for (let i = 0; i < cidr; i++) {
+        for (let i = 0; i < cidrNum; i++) {
                 beginBits += i6HexToBin.charAt(i);
         }
 
@@ -103,19 +88,12 @@ function findIPv6Block(i6Num) {
 
         while (i6Begins.length != 128) {
                 i6Begins += '0';
-                //console.log("ib: " + i6Begins)
         }
 
         while (i6Ends.length != 128) {
                 i6Ends += '1';
-                //console.log("ie: "+i6Ends);
         }
 
-        //console.log('i6Begins: ' + i6Begins);
-        //console.log('i6Ends: ' + i6Ends);
-
-        let rebuiltIPV6Begins = [];
-        let rebuiltIPV6Ends = [];
 
         for (let i = 0; i < i6Begins.length; i+=16) {
                 let sect = i6Begins.slice(i,i+16);
@@ -131,7 +109,6 @@ function findIPv6Block(i6Num) {
                 }
                 let finalLower = padSect + sect;
                 rebuiltIPV6Begins.push(finalLower);
-                
         }
 
         for (let i = 0; i < i6Ends.length; i+=16) {
@@ -152,10 +129,6 @@ function findIPv6Block(i6Num) {
         i6Range.push(rebuiltIPV6Begins);
         i6Range.push(rebuiltIPV6Ends);
         return i6Range;
-        //console.log(rebuiltIPV6Begins);
-        //console.log(rebuiltIPV6Ends);
-
-
 }
 
 
@@ -241,18 +214,6 @@ function padOctet(octet) {
         }
 }
 
-// later we sort our ipObjectArray based on start and ascending
-// lastly implement binary search to find ip
-// trun into express middleware and update as my first useful npm package!
-
-
-function sortArray(array) {
-        array.sort(function(a,b) {
-                return a.start - b.start;
-        });
-}
-
-
 function expandIPv6(ipv6String) {
         let expandedIPv6 = [];
         let expandedIPv6String = '';
@@ -301,8 +262,6 @@ function expandIPv6(ipv6String) {
 }
 
 
-
-
 function padHextet(hextet) {
         let paddedHextet = hextet;
         if (paddedHextet.length === 4) {
@@ -317,23 +276,21 @@ function padHextet(hextet) {
 }
 
 function getCidrBlock(ip) {
-        let cidr = '';
         if (ip.includes('/')) {
-                cidr = ip.split('/')[1];
+                return ip.split('/')[1];
         }
-        return cidr;
 }
 
+function sortArray(array) {
+        array.sort(function(a,b) {
+                return a.start - b.start;
+        });
+}
 
 function banCheckMiddleware(options) {
        createIPObject(loadIPList(options.source));
-/*        console.log(ipa);
-        sortArray(ipa);
-        console.log(ipa);*/
-
        console.log(ipv4ObjectArray);
        console.log(ipv6ObjectArray);
-
 
         return function(req, res, next) {
                 const ip = req.headers['cf-connecting-ip'] || req.ip;
