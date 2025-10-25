@@ -6,7 +6,7 @@ A lightweight Node.js package to block and manage IP addresses easily.
 
 - Add or remove IPs dynamically via text file
 - Checks if an IP is banned
-- Sends the banned IP a 403 response[^1] 
+- Sends the banned IP a 403 response[^1][^2] 
 - Simple and easy to integrate with Express or other Node.js apps
 
 ## Installation
