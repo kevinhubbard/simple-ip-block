@@ -6,7 +6,7 @@ A lightweight Node.js package to block and manage IP addresses easily.
 
 - Add or remove IPs dynamically via text file
 - Checks if an IP is banned
-- Sends the banned IP a 403 response[^1][^2] 
+- Sends the banned IP a 403 response [^1][^2] 
 - Simple and easy to integrate with Express or other Node.js apps
 
 ## Installation
@@ -39,7 +39,7 @@ app.use(banCheck({source: './bannedList.txt'}));
 - [ ] Refactor/Modularize
 - [ ] Quicksort
 - [ ] Binary search for faster loading
-- [ ] \(Optional) Seralize object for even faster loading is textfile is unchanged
+- [ ] \(Optional) Seralize object for even faster loading if textfile is unchanged
 - [ ] Add delight to the experience when all tasks are complete :tada:
 
 [^1]: This middleware responds to banned IP requests with a 403 response (banned IPs can continue to make requests, they won't be served any assets, however they can still use up bandwidth).
