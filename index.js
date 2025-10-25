@@ -52,7 +52,7 @@ function banCheck(options) {
        // console.log(ipv4ObjectArray, ipv6ObjectArray);
 
         return function(req, res, next) {
-                const ip = req.headers['cf-connecting-ip'] || req.ip;
+                let ip = req.headers['cf-connecting-ip'] || req.ip;
                 // Handle local dev IPs 
                 if (ip.startsWith('::ffff:')) {
                         ip = ip.replace('::ffff:', '');
