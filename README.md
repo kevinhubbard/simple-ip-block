@@ -1,5 +1,5 @@
 # simple-ip-block
-A lightweight Node.js package to block and manage single IP addresses or entire CIDR blocks easily.
+Is a lightweight Node.js package that can block and manage single IP addresses or entire CIDR blocks easily.
 
 ## Features
 - Add or remove IPs dynamically via text file
@@ -37,5 +37,5 @@ app.use(banCheck({source: './bannedList.txt'}));
 - [ ] \(Optional) Seralize object for even faster loading if textfile is unchanged
 - [ ] Add delight to the experience when all tasks are complete :tada:
 
-[^1]: This middleware responds to banned IP requests with a 403 response (banned IPs can continue to make requests, they won't be served any assets, however they can still use up bandwidth).
+[^1]: This middleware sends a 403 response to banned IPs; they can still make requests, but no assets are delivered (bandwidth may still be used).
 [^2]: To completely prevent problem IPs requests from reaching your server, create a firewall rule through your proxy.
