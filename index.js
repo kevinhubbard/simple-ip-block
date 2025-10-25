@@ -53,6 +53,12 @@ function banCheck(options) {
 
         return function(req, res, next) {
                 const ip = req.headers['cf-connecting-ip'] || req.ip;
+                // Handle local dev IPs 
+                if (ip.startsWith('::ffff:')) {
+                        ip = ip.replace('::ffff:', '');
+                } else if (ip === '::1') {
+                        ip = '127.0.0.1';
+                }
                 if (ip.includes(':')) { // ipv6 check
                         const convertedIP = ipv6.v6ToInteger(ipv6.expandIPv6(ip));
                         const isv6Banned = ipv6ObjectArray.some(block => {
