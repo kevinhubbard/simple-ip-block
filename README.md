@@ -25,12 +25,13 @@ app.use(banCheck({source: './bannedIP.txt'}));
 > Text file should contain only 1 IP address per line using one of the following formats.
 - IPv4 addresses, IPv4 CIDR ranges, IPv6 addresses, IPv6 CIDR ranges
 
+```
 192.168.1.1
 192.168.1.1/24
 2001:0db8:85a3:0000:0000:8a2e:0370:7334
 2001:0db8:85a3::0370:7334
 2001:0db8::1/66
-
+```
 
 ## Task list
 - [x] Add IPv6 functionality
