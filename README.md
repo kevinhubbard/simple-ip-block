@@ -27,14 +27,13 @@ app.use(banCheck({source: './bannedList.txt'}));
 192.168.1.1/24
 2001:0db8:85a3:0000:0000:8a2e:0370:7334
 2001:0db8:85a3::0370:7334
-2001:0db8::1/66
+2001:db8::1/66
 ```
 
 ## Task list
 - [x] Add IPv6 functionality
 - [ ] Refactor/Modularize
-- [ ] Quicksort
-- [ ] Binary search for faster loading
+- [ ] Add quicksort and binary search functionality for faster loading
 - [ ] \(Optional) Seralize object for even faster loading if textfile is unchanged
 - [ ] Add delight to the experience when all tasks are complete :tada:
 
